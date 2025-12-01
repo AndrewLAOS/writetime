@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WriteTime AI Competitions</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f8f9fa;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #4a90e2;
+      color: white;
+      padding: 2rem;
+      text-align: center;
+    }
+    main {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 1rem;
+    }
+    input, button {
+      padding: 0.5rem;
+      font-size: 1rem;
+      margin-right: 0.5rem;
+    }
+    button {
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #357ABD;
+    }
+    .competition {
+      background-color: white;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .competition h3 {
+      margin: 0 0 0.5rem 0;
+    }
+    .competition a {
+      color: #4a90e2;
+      text-decoration: none;
+    }
+    .competition a:hover {
+      text-decoration: underline;
+    }
+    .meta {
+      font-size: 0.9rem;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>WriteTime AI Competition Finder</h1>
+    <p>Enter your writing preferences to find competitions!</p>
+  </header>
+
+  <main>
+    <input id="prefs" placeholder="poetry, under 13, fantasy..." />
+    <button onclick="findCompetitions()">Find Competitions</button>
+
+    <div id="results"></div>
+  </main>
+
+  <script>
+    async function findCompetitions() {
+      const prefs = document.getElementById("prefs").value;
+      const resultsDiv = document.getElementById("results");
+      resultsDiv.innerHTML = "<p>Loading...</p>";
+
+      try {
+        const res = await fetch(`/api/competitions?prefs=${encodeURIComponent(prefs)}`);
+        const competitions = await res.json();
+
+        if (!competitions.length) {
+          resultsDiv.innerHTML = "<p>No competitions found.</p>";
+          return;
+        }
+
+        resultsDiv.innerHTML = competitions.map(c => `
+          <div class="competition">
+            <h3>${c.title}</h3>
+            <p>${c.description || ''}</p>
+            <p class="meta">
+              ${c.genre ? `Genre: ${c.genre} | ` : ''}
+              ${c.age_group ? `Age: ${c.age_group}` : ''}
+            </p>
+            <p><a href="${c.url}" target="_blank">Go to competition</a></p>
+          </div>
+        `).join('');
+
+      } catch (err) {
+        resultsDiv.innerHTML = `<p>Error fetching competitions: ${err}</p>`;
+      }
+    }
+  </script>
+</body>
+</html>
